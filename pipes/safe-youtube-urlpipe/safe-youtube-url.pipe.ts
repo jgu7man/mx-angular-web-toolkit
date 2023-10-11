@@ -15,11 +15,10 @@ export class MxSafeYoutubeURLPipe implements PipeTransform {
 
     /* Changes no cookie url */
     if (url.includes('youtu.be')) {
-      url = url.replace('youtu.be/', 'www.youtube-nocookie.com/');
+      url = url.replace('youtu.be/', 'youtube.com/embed/');
     } else if (url.includes('youtube.com')) {
-      url = url.replace('youtube.com/', 'youtube-nocookie.com/');
+      url = url.replace('youtube.com/', 'youtube.com/embed/');
     }
-
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

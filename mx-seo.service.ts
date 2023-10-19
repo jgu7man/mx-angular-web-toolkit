@@ -34,7 +34,7 @@ export class MxSEO {
 					let title;
 					if (prefix) title = prefix;
 					while (route.firstChild) {
-						let data = route.firstChild.snapshot.data;
+						const data = route.firstChild.snapshot.data;
 						title = title ? (data["title"] ? `${title} - ${data["title"]}` : title) : data["title"];
 						route = route.firstChild;
 					}
@@ -70,7 +70,7 @@ export class MxSEO {
 	 * @param {string} title El texto que asignará como título SEO
 	 */
 	setTitleTags(title: string) {
-		let tag = this.meta.getTag('name="twitter:title"');
+		const tag = this.meta.getTag('name="twitter:title"');
 		this.setTitle(title);
 		if (tag) {
 			this.meta.updateTag({ name: "twitter:title", content: title });
@@ -88,7 +88,7 @@ export class MxSEO {
 	 * @param {string} content
 	 */
 	setMetaTag(name: string, content: string) {
-		let tag = this.meta.getTag(`name="${name}"`);
+		const tag = this.meta.getTag(`name="${name}"`);
 		if (!tag) {
 			this.renderMetaTag(name, content);
 			this.renderMetaTag(`twitter:${name}`, content);
@@ -101,7 +101,7 @@ export class MxSEO {
 	}
 
 	setKeywords(keywords: string) {
-		let tag = this.meta.getTag(`name="keywords"`);
+		const tag = this.meta.getTag(`name="keywords"`);
 		if (!tag) {
 			this.renderMetaTag("keywords", keywords);
 		} else {
@@ -111,10 +111,10 @@ export class MxSEO {
 
 	setSlug(slug: string, host?: string) {
 		if (!host) {
-			let splited = window.location.href.split("/");
+			const splited = window.location.href.split("/");
 			host = splited[0].includes("http") ? `${splited[0]}//${splited[2]}` : splited[0];
 		}
-		let tag = this.meta.getTag(`name="og:slug"`);
+		const tag = this.meta.getTag(`name="og:slug"`);
 		if (!tag) {
 			this.renderMetaTag("og:slug", `${host}/${slug}`);
 		} else {
@@ -123,7 +123,7 @@ export class MxSEO {
 	}
 
 	renderMetaTag(name: string, content: string) {
-		let meta = this.render.createElement("meta");
+		const meta = this.render.createElement("meta");
 		if (name.includes("og")) {
 			this.render.setAttribute(meta, "property", name);
 		} else {

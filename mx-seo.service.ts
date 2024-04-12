@@ -1,8 +1,8 @@
-import { DOCUMENT } from '@angular/common';
-import { Inject, Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
+import { MxLocationService } from '../location';
 
 @Injectable({ providedIn: 'root' })
 export class MxSEO {
@@ -12,12 +12,11 @@ export class MxSEO {
     private meta: Meta,
     private title: Title,
     private renderFac: RendererFactory2,
-    @Inject(DOCUMENT) private document: any,
+    private location: MxLocationService,
     private readonly router: Router,
     private readonly activatedRoute: ActivatedRoute
   ) {
     this.render = this.renderFac.createRenderer(null, null);
-    // this.setupRouting()
   }
 
   /**
@@ -35,11 +34,7 @@ export class MxSEO {
           if (prefix) title = prefix;
           while (route.firstChild) {
             const data = route.firstChild.snapshot.data;
-            title = title
-              ? data['title']
-                ? `${title} - ${data['title']}`
-                : title
-              : data['title'];
+            title = title ? (data['title'] ? `${title} - ${data['title']}` : title) : data['title'];
             route = route.firstChild;
           }
           this.title.setTitle(title);
@@ -51,14 +46,10 @@ export class MxSEO {
   /**
    * Crea meta tags en el documento `index.html` para efectos de SEO
    *
-   * @param {SEOCONFIG} config debe contener la configuración explícita
+   * @param {MxSeoConfig} config debe contener la configuración explícita
    */
-  setTags(config: SEOCONFIG) {
-    config.keywords = !config.keywords
-      ? config.title
-        ? config.title
-        : ''
-      : config.keywords;
+  setTags(config: MxSeoConfig) {
+    config.keywords = !config.keywords ? (config.title ? config.title : '') : config.keywords;
 
     config.description = config.description ? config.description : '';
     config.image = config.image ? config.image : '';
@@ -80,9 +71,7 @@ export class MxSEO {
     const rest = lowerAll.substring(1, text.length);
     return onlyFirst
       ? `${first}${rest}`
-      : lowerAll.replace(/(?:^|\s|["'([{])+\S/g, (match) =>
-          match.toUpperCase()
-        );
+      : lowerAll.replace(/(?:^|\s|["'([{])+\S/g, (match) => match.toUpperCase());
   }
 
   private getDescription(content: string) {
@@ -108,8 +97,8 @@ export class MxSEO {
       this.meta.updateTag({ name: 'twitter:title', content: title });
       this.meta.updateTag({ property: `og:title`, content: title });
     } else {
-      this.renderMetaTag('twitter:title', title);
-      this.renderMetaTag('og:title', title);
+      this.meta.addTag({ name: 'twitter:title', content: title });
+      this.meta.addTag({ property: 'og:title', content: title });
     }
   }
 
@@ -122,9 +111,9 @@ export class MxSEO {
   setMetaTag(name: string, content: string) {
     const tag = this.meta.getTag(`name="${name}"`);
     if (!tag) {
-      this.renderMetaTag(name, content);
-      this.renderMetaTag(`twitter:${name}`, content);
-      this.renderMetaTag(`og:${name}`, content);
+      this.meta.addTag({ name, content });
+      this.meta.addTag({ name: `twitter:${name}`, content });
+      this.meta.addTag({ property: `og:${name}`, content: content });
     } else {
       this.meta.updateTag({ name: name, content: content });
       this.meta.updateTag({ name: `twitter:${name}`, content: content });
@@ -135,7 +124,7 @@ export class MxSEO {
   setKeywords(keywords: string) {
     const tag = this.meta.getTag(`name="keywords"`);
     if (!tag) {
-      this.renderMetaTag('keywords', keywords);
+      this.meta.addTag({ name: 'keywords', content: keywords });
     } else {
       this.meta.updateTag({ name: 'keywords', content: keywords });
     }
@@ -143,28 +132,15 @@ export class MxSEO {
 
   setSlug(slug: string, host?: string) {
     if (!host) {
-      const splited = window.location.href.split('/');
-      host = splited[0].includes('http')
-        ? `${splited[0]}//${splited[2]}`
-        : splited[0];
+      const splited = this.location.href.split('/');
+      host = splited[0].includes('http') ? `${splited[0]}//${splited[2]}` : splited[0];
     }
     const tag = this.meta.getTag(`name="og:slug"`);
     if (!tag) {
-      this.renderMetaTag('og:slug', `${host}/${slug}`);
+      this.meta.addTag({ name: 'og:slug', content: `${host}/${slug}` });
     } else {
       this.meta.updateTag({ name: 'og:slug', content: `${host}/${slug}` });
     }
-  }
-
-  renderMetaTag(name: string, content: string) {
-    const meta = this.render.createElement('meta');
-    if (name.includes('og')) {
-      this.render.setAttribute(meta, 'property', name);
-    } else {
-      meta.name = name;
-    }
-    meta.content = content;
-    this.render.appendChild(document.head, meta);
   }
 
   /**
@@ -175,9 +151,8 @@ export class MxSEO {
    * @returns {*}
    */
   capitalize(text: string, lower = false) {
-    return (lower ? text.toLowerCase() : text).replace(
-      /(?:^|\s|["'([{])+\S/g,
-      (match) => match.toUpperCase()
+    return (lower ? text.toLowerCase() : text).replace(/(?:^|\s|["'([{])+\S/g, (match) =>
+      match.toUpperCase()
     );
   }
 
@@ -186,7 +161,7 @@ export class MxSEO {
   }
 }
 
-export interface SEOCONFIG {
+export interface MxSeoConfig {
   title: string;
   description?: string;
   keywords?: string;

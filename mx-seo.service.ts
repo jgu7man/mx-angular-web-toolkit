@@ -1,8 +1,10 @@
-import { Injectable, Renderer2, RendererFactory2 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Inject, Injectable, Renderer2, RendererFactory2, ViewEncapsulation } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { MxLocationService } from '../location';
+import { LinkDefinition, MetaRobotsValues, MxSeoConfig } from './mx-seo.model';
 
 @Injectable({ providedIn: 'root' })
 export class MxSEO {
@@ -14,7 +16,8 @@ export class MxSEO {
     private renderFac: RendererFactory2,
     private location: MxLocationService,
     private readonly router: Router,
-    private readonly activatedRoute: ActivatedRoute
+    private readonly activatedRoute: ActivatedRoute,
+    @Inject(DOCUMENT) private document: Document
   ) {
     this.render = this.renderFac.createRenderer(null, null);
   }
@@ -159,12 +162,37 @@ export class MxSEO {
   setTitle(text: string) {
     this.title.setTitle(this.capitalize(text));
   }
-}
 
-export interface MxSeoConfig {
-  title: string;
-  description?: string;
-  keywords?: string;
-  image?: string;
-  slug?: string;
+  /**
+   * Inject the State into the bottom of the <head>
+   */
+  addLinkTag(tag: LinkDefinition) {
+    try {
+      const renderer = this.renderFac.createRenderer(this.document, {
+        id: '-1',
+        encapsulation: ViewEncapsulation.None,
+        styles: [],
+        data: {}
+      });
+
+      const link = renderer.createElement('link');
+      const head = this.document.head;
+
+      if (head === null) {
+        throw new Error('<head> not found within DOCUMENT.');
+      }
+
+      Object.keys(tag).forEach((prop: string) => {
+        renderer.setAttribute(link, prop, tag[prop]);
+      });
+
+      renderer.appendChild(head, link);
+    } catch (e) {
+      console.error('Error creating a link tag: ', e);
+    }
+  }
+
+  setRobots(values: MetaRobotsValues[]) {
+    this.setMetaTag('robots', values.join(', '));
+  }
 }

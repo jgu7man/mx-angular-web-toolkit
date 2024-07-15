@@ -52,20 +52,18 @@ export class MxSEO {
    * @param {MxSeoConfig} config debe contener la configuración explícita
    */
   setTags(config: MxSeoConfig) {
-    config.keywords = !config.keywords ? (config.title ? config.title : '') : config.keywords;
+    const { title = '', description = '', image = '', slug = '' } = config;
+    const keywords = (config.keywords = config.keywords || title);
 
-    config.description = config.description ? config.description : '';
-    config.image = config.image ? config.image : '';
-    config.slug = config.slug ? config.slug : '';
-    const title = this.capitalizeTitle(config.title, true);
-    const description = this.getDescription(config.description);
+    const formattedTitle = this.capitalizeTitle(title, true);
+    const seoDescription = this.getDescription(description);
 
-    this.setTitleTags(title);
-    this.setMetaTag('description', description);
-    this.setMetaTag('image', config.image);
+    this.setTitleTags(formattedTitle);
+    this.setMetaTag('description', seoDescription);
+    this.setMetaTag('image', image);
 
-    this.setKeywords(config.keywords);
-    this.setSlug(config.slug);
+    this.setKeywords(keywords);
+    this.setSlug(slug);
   }
 
   capitalizeTitle(text: string, onlyFirst: boolean = false) {

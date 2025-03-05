@@ -9,14 +9,14 @@ export class MxSafeYoutubeURLPipe implements PipeTransform {
 
   transform(url: string): SafeResourceUrl {
     /* Changes public url for embed url */
-    if (url.includes('watch?v=')) {
+    if (url?.includes('watch?v=')) {
       url = url.replace('watch?v=', 'embed/');
     }
 
     /* Changes no cookie url */
-    if (url.includes('youtu.be')) {
+    if (url?.includes('youtu.be')) {
       url = url.replace('youtu.be/', 'youtube.com/embed/');
-    } else if (url.includes('youtube.com')) {
+    } else if (url?.includes('youtube.com')) {
       url = url.replace('youtube.com/', 'youtube.com/embed/');
     }
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);

@@ -1,0 +1,21 @@
+{
+  "projects": {
+    "default": "tiendalasmotos-dev"
+  },
+  "targets": {
+    "tiendalasmotos-dev": {
+      "hosting": {
+        "lasmotos-website": [
+          "lasmotos-website-dev"
+        ]
+      }
+    },
+    "tiendalasmotos": {
+      "hosting": {
+        "lasmotos-website": [
+          "tiendalasmotos"
+        ]
+      }
+    }
+  }
+}
